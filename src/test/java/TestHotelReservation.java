@@ -8,29 +8,23 @@ import static org.junit.Assert.assertEquals;
 public class TestHotelReservation
 {
     @Test
-    public void UC1_1() {
-        HotelParameter ob=new HotelParameter("Lakewood",110.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"));//actual
-        Assert.assertEquals("Lakewood", ob.hotelName);
-        Assert.assertEquals(110.0, ob.price);
+    public void UC1() {
+        HotelParameter ob1=new HotelParameter("Lakewood",110.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"),110.0, 90.0);//actual
+        Assert.assertEquals("Lakewood", ob1.hotelName);
+        Assert.assertEquals(110.0, ob1.price);
+        HotelParameter ob2=new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),150.0, 50.0);//actual
+        Assert.assertEquals("Bridgewood", ob2.hotelName);
+        Assert.assertEquals(160.0, ob2.price);
+        HotelParameter ob3=new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),220.0,150.0);//actual
+        Assert.assertEquals("Ridgewood", ob3.hotelName);
+        Assert.assertEquals(210.0, ob3.price);
     }
     @Test
-    public void UC1_2() {
-        HotelParameter ob=new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"));//actual
-        Assert.assertEquals("Bridgewood", ob.hotelName);
-        Assert.assertEquals(160.0, ob.price);
-    }
-    @Test
-    public void UC1_3() {
-        HotelParameter ob1=new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"));//actual
-        Assert.assertEquals("Ridgewood", ob1.hotelName);
-        Assert.assertEquals(210.0, ob1.price);
-    }
-    @Test
-    public void UC2_1()
+    public void UC2()
     {
-        HotelParameter ob1=new HotelParameter("Lakewood",110.0,parseDate("10/sep/2020"),parseDate("11/sep/2020"));//actual
-        HotelParameter ob2=new HotelParameter("Bridgewood", 160.0,parseDate("10/sep/2020"),parseDate("11/sep/2020"));//actual
-        HotelParameter ob3=new HotelParameter("Ridgewood", 210.0,parseDate("10/sep/2020"),parseDate("11/sep/2020"));//actual
+        HotelParameter ob1=new HotelParameter("Lakewood",110.0,parseDate("10/sep/2020"),parseDate("11/sep/2020"), 110.0, 90.0);//actual
+        HotelParameter ob2=new HotelParameter("Bridgewood", 160.0,parseDate("10/sep/2020"),parseDate("11/sep/2020"),150.0, 50.0);//actual
+        HotelParameter ob3=new HotelParameter("Ridgewood", 210.0,parseDate("10/sep/2020"),parseDate("11/sep/2020"),220.0,150.0);//actual
         if (ob1.price<ob2.price&&ob1.price<ob3.price) {
             Assert.assertEquals("Lakewood", ob1.hotelName);
             Assert.assertEquals(110.0, ob1.price);
@@ -52,5 +46,18 @@ public class TestHotelReservation
             Assert.assertEquals("11/sep/2020", ob3.endDate);
             System.out.println("Hotel "+ob3.hotelName +" is Cheapest at Price: "+ob3.price+" Available from:- "+ob3.startDate+ " to "+ob3.endDate);
         }
+    }
+    @Test
+    public void UC3()
+    {
+        HotelParameter ob1=new HotelParameter("Lakewood",110.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"),110.0, 90.0);//actual
+        Assert.assertEquals("Lakewood", ob1.hotelName);
+        Assert.assertEquals(200.0, ob1.calRate());
+        HotelParameter ob2=new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),150.0, 50.0);//actual
+        Assert.assertEquals("Bridgewood", ob2.hotelName);
+        Assert.assertEquals(200.0, ob2.calRate());
+        HotelParameter ob3=new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),220.0,150.0);//actual
+        Assert.assertEquals("Ridgewood", ob3.hotelName);
+        Assert.assertEquals(370.0, ob3.calRate());
     }
 }
