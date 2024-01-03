@@ -10,16 +10,19 @@ public class HotelParameter {
     public Date endDate;
     public static Double weekdayRate;
     public Double weekendRate;
-    public HotelParameter(String hotelName, Double price, Date startDate, Date endDate, Double weekdayRate, Double weekendRate) {
+    public int rating;
+
+    public HotelParameter(String hotelName, Double price, Date startDate, Date endDate, Double weekdayRate, Double weekendRate, int rating) {
         this.hotelName = hotelName;
         this.price = price;
         this.startDate=startDate;
         this.endDate=endDate;
         this.weekdayRate=weekdayRate;
         this.weekendRate=weekendRate;
+        this.rating = rating;
     }
-    public static HotelParameter createHotel(String hotelName, Double price, Date startDate, Date endDate,Double weekdayRate ,Double weekendRate) {
-        return new HotelParameter(hotelName, price, startDate, endDate, weekdayRate, weekendRate);
+    public static HotelParameter createHotel(String hotelName, Double price, Date startDate, Date endDate, Double weekdayRate, Double weekendRate, int rating) {
+        return new HotelParameter(hotelName, price, startDate, endDate, weekdayRate, weekendRate, rating);
     }
     public static HotelParameter cheapHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate) {
         HotelParameter cheapest = null;
@@ -32,9 +35,9 @@ public class HotelParameter {
     return cheapest;
 }
     public static void main(String[] args) {
-        HotelParameter ob1 = createHotel("Lakewood", 110.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),110.0,90.0);
-        HotelParameter ob2 = createHotel("Bridgewood", 160.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"),150.0,50.0);
-        HotelParameter ob3 = createHotel("Ridgewood", 210.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"),220.0, 150.0);
+        HotelParameter ob1 = createHotel("Lakewood", 110.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 110.0, 90.0, 3);
+        HotelParameter ob2 = createHotel("Bridgewood", 160.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 150.0, 50.0, 4);
+        HotelParameter ob3 = createHotel("Ridgewood", 210.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 220.0, 150.0, 5);
         HashMap<String, HotelParameter> hm = new HashMap<>();
         hm.put(ob1.hotelName, ob1);
         hm.put(ob2.hotelName, ob2);
@@ -53,7 +56,7 @@ public class HotelParameter {
     public static void showHotelByDateRange(HashMap<String, HotelParameter> hm, Date startDate, Date endDate) {
         for (HotelParameter hotel : hm.values()) {
             if (isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate)) {
-                System.out.println("Range: " + startDate + " - " + endDate + "_" + hotel.hotelName + "_" + hotel.calRate(startDate, endDate));
+                System.out.println("Range: " + startDate + " - " + endDate + "_" + hotel.hotelName + "_" + hotel.calRate(startDate, endDate)+"_ "+ hotel.rating);
             }
         }
     }
