@@ -50,14 +50,16 @@ public class TestHotelReservation
     @Test
     public void UC3()
     {
-        HotelParameter ob1=new HotelParameter("Lakewood",110.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"),110.0, 90.0);//actual
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 110.0, 90.0);
         Assert.assertEquals("Lakewood", ob1.hotelName);
-        Assert.assertEquals(200.0, ob1.calRate());
-        HotelParameter ob2=new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),150.0, 50.0);//actual
+        Assert.assertEquals(220.0, ob1.calRate(ob1.startDate, ob1.endDate), 0.01);
+
+        HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 150.0, 50.0);
         Assert.assertEquals("Bridgewood", ob2.hotelName);
-        Assert.assertEquals(200.0, ob2.calRate());
-        HotelParameter ob3=new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"),220.0,150.0);//actual
+        Assert.assertEquals(300.0, ob2.calRate(ob2.startDate, ob2.endDate), 0.01); // Fix here
+
+        HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 220.0, 150.0);
         Assert.assertEquals("Ridgewood", ob3.hotelName);
-        Assert.assertEquals(370.0, ob3.calRate());
+        Assert.assertEquals(440.0, ob3.calRate(ob3.startDate, ob3.endDate), 0.01);
     }
 }
