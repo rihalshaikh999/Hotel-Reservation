@@ -33,24 +33,27 @@ public class HotelParameter {
         return new HotelParameter(hotelName, price, startDate, endDate, weekendRate, weekdayRate, rating,
                 rewardWeekendRate, rewardWeekdayRate);
     }
-    public static HotelParameter cheapHotel(HashMap<String, HotelParameter>hm, Date startDate, Date endDate)
-    {
-        HotelParameter cheap=null;
-        for(HotelParameter hotel:hm.values())
-        {
-            double totalRate = hotel.calRate(startDate, endDate, true);
-            if(cheap == null || totalRate < cheap.calRate(startDate, endDate, true))
-                cheap=hotel;
+    public static HotelParameter cheapHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate, boolean isRewardCustomer) {
+        validateDateRange(startDate, endDate);
+
+        HotelParameter cheap = null;
+        for (HotelParameter hotel : hm.values()) {
+            double totalRate = hotel.calRate(startDate, endDate, isRewardCustomer);
+            if (cheap == null || totalRate < cheap.calRate(startDate, endDate, isRewardCustomer))
+                cheap = hotel;
         }
         return cheap;
     }
-    public static HotelParameter bestRatedHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate) {
+    public static HotelParameter bestRatedHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate, boolean isRewardCustomer) {
+        validateDateRange(startDate, endDate);
+
         HotelParameter bestRated = null;
         int highestRating = Integer.MIN_VALUE;
 
         for (HotelParameter hotel : hm.values()) {
             if (isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate)) {
-                if (hotel.rating > highestRating || (hotel.rating == highestRating && hotel.calRate(startDate, endDate, true) < bestRated.calRate(startDate, endDate, true))) {
+                double totalRate = hotel.calRate(startDate, endDate, isRewardCustomer);
+                if (hotel.rating > highestRating || (hotel.rating == highestRating && totalRate < bestRated.calRate(startDate, endDate, isRewardCustomer))) {
                     bestRated = hotel;
                     highestRating = hotel.rating;
                 }
@@ -72,21 +75,30 @@ public class HotelParameter {
         ob2.rewardWeekendRate = 50.0;
         ob3.rewardWeekdayRate = 100.0;
         ob3.rewardWeekendRate = 40.0;
-        Date rangeStartDate = parseDate("11/sep/2020");
-        Date rangeEndDate = parseDate("12/sep/2020");
-        showHotelByDateRange(hm, rangeStartDate, rangeEndDate);
-        HotelParameter cheap=cheapHotel(hm, rangeStartDate, rangeEndDate);
-        if (cheap != null) {
-            System.out.println("Cheapest Hotel: " + cheap.hotelName+ " rating: " + cheap.rating +" " + cheap.calRate(rangeStartDate, rangeEndDate, true));
-        } else {
-            System.out.println("No Hotels Found...!!!");
-        }
-        HotelParameter bestRated = bestRatedHotel(hm, rangeStartDate, rangeEndDate);
+        try {
+            Date rangeStartDate = parseDate("11/Sep/2020");
+            Date rangeEndDate = parseDate("12/Sep/2020");
+            validateDateRange(rangeStartDate, rangeEndDate);
+            HotelParameter cheap = cheapHotel(hm, rangeStartDate, rangeEndDate, true);
+            if (cheap != null) {
+                System.out.println("Cheapest Hotel: " + cheap.hotelName + " rating: " + cheap.rating + " " + cheap.calRate(rangeStartDate, rangeEndDate, true));
+            } else {
+                System.out.println("No Hotels Found...!!!");
+            }
 
-        if (bestRated != null) {
-            System.out.println("Best Rated Hotel: " + bestRated.hotelName + " rating: " + bestRated.rating + " " + bestRated.calRate(rangeStartDate, rangeEndDate, true));
-        } else {
-            System.out.println("No Hotels Found...!!!");
+            HotelParameter bestRated = bestRatedHotel(hm, rangeStartDate, rangeEndDate, true);
+            if (bestRated != null) {
+                System.out.println("Best Rated Hotel: " + bestRated.hotelName + " rating: " + bestRated.rating + " " + bestRated.calRate(rangeStartDate, rangeEndDate, true));
+            } else {
+                System.out.println("No Hotels Found...!!!");
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    private static void validateDateRange(Date startDate, Date endDate) {
+        if (startDate == null || endDate == null || startDate.after(endDate)) {
+            throw new IllegalArgumentException("Invalid date range. Please provide valid start and end dates.");
         }
     }
 
