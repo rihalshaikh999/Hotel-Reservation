@@ -37,10 +37,25 @@ public class HotelParameter {
         }
         return cheap;
     }
+    public static HotelParameter bestRatedHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate) {
+        HotelParameter bestRated = null;
+        int highestRating = Integer.MIN_VALUE;
+
+        for (HotelParameter hotel : hm.values()) {
+            if (isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate)) {
+                if (hotel.rating > highestRating || (hotel.rating == highestRating && hotel.calRate(startDate, endDate) < bestRated.calRate(startDate, endDate))) {
+                    bestRated = hotel;
+                    highestRating = hotel.rating;
+                }
+            }
+        }
+
+        return bestRated;
+    }
     public static void main(String[] args) {
-        HotelParameter ob1 = createHotel("Lakewood", 110.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 80.0, 110.0, 3);
-        HotelParameter ob2 = createHotel("Bridgewood", 160.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"), 50.0, 150.0, 4);
-        HotelParameter ob3 = createHotel("Ridgewood", 210.0,parseDate("10/sep/2020"), parseDate("11/sep/2020"), 150.0, 220.0, 5);
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 90.0, 110.0, 3);
+        HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 50.0, 150.0, 4);
+        HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 150.0, 220.0, 5);
         HashMap<String, HotelParameter> hm = new HashMap<>();
         hm.put(ob1.hotelName, ob1);
         hm.put(ob2.hotelName, ob2);
@@ -51,6 +66,13 @@ public class HotelParameter {
         HotelParameter cheap=cheapHotel(hm, rangeStartDate, rangeEndDate);
         if (cheap != null) {
             System.out.println("Cheapest Hotel: " + cheap.hotelName+ " rating: " + cheap.rating +" " + cheap.calRate(rangeStartDate, rangeEndDate));
+        } else {
+            System.out.println("No Hotels Found...!!!");
+        }
+        HotelParameter bestRated = bestRatedHotel(hm, rangeStartDate, rangeEndDate);
+
+        if (bestRated != null) {
+            System.out.println("Best Rated Hotel: " + bestRated.hotelName + " rating: " + bestRated.rating + " " + bestRated.calRate(rangeStartDate, rangeEndDate));
         } else {
             System.out.println("No Hotels Found...!!!");
         }

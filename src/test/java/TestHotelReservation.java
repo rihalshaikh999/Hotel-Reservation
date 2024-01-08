@@ -2,6 +2,9 @@ import junit.framework.Assert;
 import org.example.HotelParameter;
 import org.junit.Test;
 
+import java.util.Date;
+import java.util.HashMap;
+
 import static org.example.HotelParameter.parseDate;
 import static org.junit.Assert.assertEquals;
 
@@ -85,7 +88,7 @@ public class TestHotelReservation {
         Assert.assertEquals(4, ob2.rating);
 
         HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 150.0, 220.0, 5);//actual
-        Assert.assertEquals(4, ob3.rating);
+        Assert.assertEquals(5, ob3.rating);
     }
 
     @Test
@@ -94,5 +97,34 @@ public class TestHotelReservation {
         Assert.assertEquals("Lakewood", ob1.hotelName);
         Assert.assertEquals(110.0, ob1.price, 0.01);
         Assert.assertEquals(3, ob1.rating);
+    }
+
+    @Test
+    public void UC7_Best_Rated_Hotel() {
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 90.0, 110.0, 3);
+        HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 50.0, 150.0, 4);
+        HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 150.0, 220.0, 5);
+
+        // Create a HashMap with the hotels
+        HashMap<String, HotelParameter> hm = new HashMap<>();
+        hm.put(ob1.hotelName, ob1);
+        hm.put(ob2.hotelName, ob2);
+        hm.put(ob3.hotelName, ob3);
+
+        // Specify the date range
+        Date rangeStartDate = parseDate("11/sep/2020");
+        Date rangeEndDate = parseDate("12/sep/2020");
+
+        // Call the method to find the best-rated hotel
+        HotelParameter bestRated = HotelParameter.bestRatedHotel(hm, rangeStartDate, rangeEndDate);
+
+        // Assert the result
+        if (bestRated != null) {
+            Assert.assertEquals("Ridgewood", bestRated.hotelName);
+            Assert.assertEquals(5, bestRated.rating);
+            Assert.assertEquals(370.0, bestRated.calRate(rangeStartDate, rangeEndDate), 0.01);
+        } else {
+            Assert.fail("No best-rated hotel found.");
+        }
     }
 }
