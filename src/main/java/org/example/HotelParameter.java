@@ -49,7 +49,6 @@ public class HotelParameter {
                 }
             }
         }
-
         return bestRated;
     }
     public static void main(String[] args) {
