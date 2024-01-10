@@ -27,39 +27,26 @@ public class HotelParameter {
         this.rewardWeekendRate = rewardWeekendRate;
         this.rewardWeekdayRate = rewardWeekdayRate;
     }
-    public static HotelParameter createHotel(String hotelName, Double price, Date startDate, Date endDate,
-                                             Double weekendRate, Double weekdayRate, Double rewardWeekendRate,
-                                             Double rewardWeekdayRate, int rating) {
-        return new HotelParameter(hotelName, price, startDate, endDate, weekendRate, weekdayRate, rating,
-                rewardWeekendRate, rewardWeekdayRate);
-    }
     public static HotelParameter cheapHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate, boolean isRewardCustomer) {
         validateDateRange(startDate, endDate);
 
-        HotelParameter cheap = null;
-        for (HotelParameter hotel : hm.values()) {
-            double totalRate = hotel.calRate(startDate, endDate, isRewardCustomer);
-            if (cheap == null || totalRate < cheap.calRate(startDate, endDate, isRewardCustomer))
-                cheap = hotel;
-        }
-        return cheap;
+        return hm.values()
+                .stream()
+                .min(Comparator.comparingDouble(hotel -> hotel.calRate(startDate, endDate, isRewardCustomer)))
+                .orElse(null);
     }
     public static HotelParameter bestRatedHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate, boolean isRewardCustomer) {
         validateDateRange(startDate, endDate);
 
-        HotelParameter bestRated = null;
-        int highestRating = Integer.MIN_VALUE;
-
-        for (HotelParameter hotel : hm.values()) {
-            if (isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate)) {
-                double totalRate = hotel.calRate(startDate, endDate, isRewardCustomer);
-                if (hotel.rating > highestRating || (hotel.rating == highestRating && totalRate < bestRated.calRate(startDate, endDate, isRewardCustomer))) {
-                    bestRated = hotel;
-                    highestRating = hotel.rating;
-                }
-            }
-        }
-        return bestRated;
+        return hm.values()
+                .stream()
+                .filter(hotel -> isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate))
+                .max(Comparator.comparingInt(HotelParameter::getRating)
+                        .thenComparingDouble(hotel -> hotel.calRate(startDate, endDate, isRewardCustomer)))
+                .orElse(null);
+    }
+    public int getRating() {
+        return rating;
     }
     public static void main(String[] args) {
         HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 90.0, 110.0, 3, 80.0, 80.0);
@@ -80,18 +67,14 @@ public class HotelParameter {
             Date rangeEndDate = parseDate("12/Sep/2020");
             validateDateRange(rangeStartDate, rangeEndDate);
             HotelParameter cheap = cheapHotel(hm, rangeStartDate, rangeEndDate, true);
-            if (cheap != null) {
-                System.out.println("Cheapest Hotel: " + cheap.hotelName + " rating: " + cheap.rating + " " + cheap.calRate(rangeStartDate, rangeEndDate, true));
-            } else {
-                System.out.println("No Hotels Found...!!!");
-            }
+            System.out.println(cheap != null
+                    ? "Cheapest Hotel: " + cheap.hotelName + " rating: " + cheap.rating + " " + cheap.calRate(rangeStartDate, rangeEndDate, true)
+                    : "No Hotels Found...!!!");
 
             HotelParameter bestRated = bestRatedHotel(hm, rangeStartDate, rangeEndDate, true);
-            if (bestRated != null) {
-                System.out.println("Best Rated Hotel: " + bestRated.hotelName + " rating: " + bestRated.rating + " " + bestRated.calRate(rangeStartDate, rangeEndDate, true));
-            } else {
-                System.out.println("No Hotels Found...!!!");
-            }
+            System.out.println(bestRated != null
+                    ? "Best Rated Hotel: " + bestRated.hotelName + " rating: " + bestRated.rating + " " + bestRated.calRate(rangeStartDate, rangeEndDate, true)
+                    : "No Hotels Found...!!!");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
