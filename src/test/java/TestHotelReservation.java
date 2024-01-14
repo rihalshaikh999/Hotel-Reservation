@@ -1,12 +1,16 @@
 import junit.framework.Assert;
 import org.example.HotelParameter;
+import org.example.TestUtils;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.example.HotelParameter.parseDate;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TestHotelReservation {
     @Test
@@ -68,15 +72,15 @@ public class TestHotelReservation {
     public void UC4_CheapHotel() {
         HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 90.0, 110.0, 3, 80.0, 80.0);
         Assert.assertEquals("Lakewood", ob1.hotelName);
-        Assert.assertEquals(220.0, ob1.calRate(ob1.startDate, ob1.endDate, true), 0.01);
+        Assert.assertEquals(160.0, ob1.calRate(ob1.startDate, ob1.endDate, true), 0.01);
 
         HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 50.0, 150.0, 4, 110.0, 50.0);
         Assert.assertEquals("Bridgewood", ob2.hotelName);
-        Assert.assertEquals(300.0, ob2.calRate(ob2.startDate, ob2.endDate, true), 0.01);
+        Assert.assertEquals(100.0, ob2.calRate(ob2.startDate, ob2.endDate, true), 0.01);
 
         HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, parseDate("10/sep/2020"), parseDate("11/sep/2020"), 150.0, 220.0, 5, 100.0, 40.0);
         Assert.assertEquals("Ridgewood", ob3.hotelName);
-        Assert.assertEquals(440.0, ob3.calRate(ob3.startDate, ob3.endDate, true), 0.01);
+        Assert.assertEquals(80.0, ob3.calRate(ob3.startDate, ob3.endDate, true), 0.01);
     }
 
     @Test
@@ -122,7 +126,7 @@ public class TestHotelReservation {
         if (bestRated != null) {
             Assert.assertEquals("Ridgewood", bestRated.hotelName);
             Assert.assertEquals(5, bestRated.rating);
-            Assert.assertEquals(370.0, bestRated.calRate(rangeStartDate, rangeEndDate, true), 0.01);
+            Assert.assertEquals(140.0, bestRated.calRate(rangeStartDate, rangeEndDate, true), 0.01);
         } else {
             Assert.fail("No best-rated hotel found.");
         }
@@ -203,5 +207,96 @@ public class TestHotelReservation {
         Date invalidEndDate = parseDate("11/Sep/2020");
 
         HotelParameter.cheapHotel(hm, invalidStartDate, invalidEndDate, true);
+    }
+    @Test
+    public void UC11_CheapestBestRatedHotelForRegularCustomer() {
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 90.0, 110.0, 3, 80.0, 80.0);
+        HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 50.0, 150.0, 4, 50.0, 100.0);
+        HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 150.0, 220.0, 5, 40.0, 100.0);
+        HashMap<String, HotelParameter> hm = new HashMap<>();
+        hm.put(ob1.hotelName, ob1);
+        hm.put(ob2.hotelName, ob2);
+        hm.put(ob3.hotelName, ob3);
+
+        Date rangeStartDate = parseDate("11/Sep/2020");
+        Date rangeEndDate = parseDate("12/Sep/2020");
+
+        try {
+            HotelParameter cheap = HotelParameter.cheapHotel(hm, rangeStartDate, rangeEndDate, false);
+            HotelParameter bestRated = HotelParameter.bestRatedHotel(hm, rangeStartDate, rangeEndDate, false);
+
+            assertEquals("Bridgewood", cheap.hotelName);
+            assertEquals(4, cheap.rating);
+            assertEquals(200.0, cheap.calRate(rangeStartDate, rangeEndDate, false), 0.01);
+
+            assertEquals("Ridgewood", bestRated.hotelName);
+            assertEquals(5, bestRated.rating);
+            assertEquals(370.0, bestRated.calRate(rangeStartDate, rangeEndDate, false), 0.01);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void UC11_InvalidDateRange() {
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, parseDate("10/Sep/2020"), parseDate("11/Sep/2020"), 90.0, 110.0, 3, 80.0, 80.0);
+        HashMap<String, HotelParameter> hm = new HashMap<>();
+        hm.put(ob1.hotelName, ob1);
+        Date invalidStartDate = parseDate("12/Sep/2020");
+        Date invalidEndDate = parseDate("11/Sep/2020");
+        HotelParameter.cheapHotel(hm, invalidStartDate, invalidEndDate, false);
+    }
+
+    @Test
+    public void UC12_testCheapHotelForRegularCustomer() {
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, TestUtils.parseDate("10/Sep/2020"), TestUtils.parseDate("11/Sep/2020"), 90.0, 110.0, 3, 80.0, 80.0);
+        HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, TestUtils.parseDate("10/Sep/2020"), TestUtils.parseDate("11/Sep/2020"), 50.0, 150.0, 4, 50.0, 100.0);
+        HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, TestUtils.parseDate("10/Sep/2020"), TestUtils.parseDate("11/Sep/2020"), 150.0, 220.0, 5, 40.0, 100.0);
+
+        Map<String, HotelParameter> hotels = new HashMap<>();
+        hotels.put(ob1.hotelName, ob1);
+        hotels.put(ob2.hotelName, ob2);
+        hotels.put(ob3.hotelName, ob3);
+
+        ob1.rewardWeekdayRate = 80.0;
+        ob1.rewardWeekendRate = 80.0;
+        ob2.rewardWeekdayRate = 110.0;
+        ob2.rewardWeekendRate = 50.0;
+        ob3.rewardWeekdayRate = 100.0;
+        ob3.rewardWeekendRate = 40.0;
+
+        Date rangeStartDate = TestUtils.parseDate("11/Sep/2020");
+        Date rangeEndDate = TestUtils.parseDate("12/Sep/2020");
+
+        HotelParameter cheapestHotel = HotelParameter.cheapHotel(hotels, rangeStartDate, rangeEndDate, false);
+
+        assertNotNull(cheapestHotel);
+        assertEquals("Bridgewood", cheapestHotel.hotelName);
+    }
+
+    @Test
+    public void UC12_testBestRatedHotelForRegularCustomer() {
+        HotelParameter ob1 = new HotelParameter("Lakewood", 110.0, TestUtils.parseDate("10/Sep/2020"), TestUtils.parseDate("11/Sep/2020"), 90.0, 110.0, 3, 80.0, 80.0);
+        HotelParameter ob2 = new HotelParameter("Bridgewood", 160.0, TestUtils.parseDate("10/Sep/2020"), TestUtils.parseDate("11/Sep/2020"), 50.0, 150.0, 4, 50.0, 100.0);
+        HotelParameter ob3 = new HotelParameter("Ridgewood", 210.0, TestUtils.parseDate("10/Sep/2020"), TestUtils.parseDate("11/Sep/2020"), 150.0, 220.0, 5, 40.0, 100.0);
+
+        Map<String, HotelParameter> hotels = new HashMap<>();
+        hotels.put(ob1.hotelName, ob1);
+        hotels.put(ob2.hotelName, ob2);
+        hotels.put(ob3.hotelName, ob3);
+
+        ob1.rewardWeekdayRate = 80.0;
+        ob1.rewardWeekendRate = 80.0;
+        ob2.rewardWeekdayRate = 110.0;
+        ob2.rewardWeekendRate = 50.0;
+        ob3.rewardWeekdayRate = 100.0;
+        ob3.rewardWeekendRate = 40.0;
+
+        Date rangeStartDate = TestUtils.parseDate("11/Sep/2020");
+        Date rangeEndDate = TestUtils.parseDate("12/Sep/2020");
+
+        HotelParameter bestRatedHotel = HotelParameter.bestRatedHotel(hotels, rangeStartDate, rangeEndDate, false);
+
+        assertNotNull(bestRatedHotel);
+        assertEquals("Ridgewood", bestRatedHotel.hotelName);
     }
 }

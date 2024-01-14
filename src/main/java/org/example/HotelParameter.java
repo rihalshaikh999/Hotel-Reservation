@@ -1,12 +1,16 @@
 package org.example;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Date;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HotelParameter {
+    private static final Pattern DATE_PATTERN = Pattern.compile("\\d{2}/[a-zA-Z]{3}/\\d{4}");
     public String hotelName;
     public Double price;
     public static Date startDate;
@@ -16,35 +20,51 @@ public class HotelParameter {
     public Double rewardWeekendRate;
     public Double rewardWeekdayRate;
     public int rating;
-    public HotelParameter(String hotelName, Double price, Date startDate, Date endDate, Double weekendRate, Double weekdayRate, int rating, Double rewardWeekendRate, Double rewardWeekdayRate) {
+    public HotelParameter(String hotelName, Double price, Date startDate, Date endDate,
+                          Double weekendRate, Double weekdayRate, int rating,
+                          Double rewardWeekendRate, Double rewardWeekdayRate) {
         this.hotelName = hotelName;
         this.price = price;
-        this.startDate=startDate;
-        this.endDate=endDate;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.weekendRate = weekendRate;
         this.weekdayRate = weekdayRate;
         this.rating = rating;
         this.rewardWeekendRate = rewardWeekendRate;
         this.rewardWeekdayRate = rewardWeekdayRate;
     }
-    public static HotelParameter cheapHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate, boolean isRewardCustomer) {
-        validateDateRange(startDate, endDate);
 
-        return hm.values()
+    public static HotelParameter cheapHotel(Map<String, HotelParameter> hotels, Date startDate, Date endDate, boolean isRewardCustomer) {
+        validateDateRange(startDate, endDate);
+        return hotels.values()
                 .stream()
                 .min(Comparator.comparingDouble(hotel -> hotel.calRate(startDate, endDate, isRewardCustomer)))
                 .orElse(null);
     }
-    public static HotelParameter bestRatedHotel(HashMap<String, HotelParameter> hm, Date startDate, Date endDate, boolean isRewardCustomer) {
-        validateDateRange(startDate, endDate);
 
-        return hm.values()
+    public static HotelParameter bestRatedHotel(Map<String, HotelParameter> hotels, Date startDate, Date endDate, boolean isRewardCustomer) {
+        validateDateRange(startDate, endDate);
+        return hotels.values()
                 .stream()
                 .filter(hotel -> isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate))
                 .max(Comparator.comparingInt(HotelParameter::getRating)
                         .thenComparingDouble(hotel -> hotel.calRate(startDate, endDate, isRewardCustomer)))
                 .orElse(null);
     }
+
+    public static HotelParameter cheapBestRatedHotelForRegularCustomer(Map<String, HotelParameter> hotels, Date startDate, Date endDate) {
+        return hotels.values().stream()
+                .filter(hotel -> hotel.isWithinDateRange(startDate, endDate))
+                .min(Comparator.comparingInt(HotelParameter::getRating)
+                        .thenComparingDouble(hotel -> hotel.calRate(startDate, endDate, false)))
+                .orElse(null);
+    }
+
+    public boolean isWithinDateRange(Date startDate, Date endDate) {
+        return (startDate.equals(this.startDate) || startDate.after(this.startDate)) &&
+                (endDate.equals(this.endDate) || endDate.before(this.endDate));
+    }
+
     public int getRating() {
         return rating;
     }
@@ -66,42 +86,35 @@ public class HotelParameter {
             Date rangeStartDate = parseDate("11/Sep/2020");
             Date rangeEndDate = parseDate("12/Sep/2020");
             validateDateRange(rangeStartDate, rangeEndDate);
-            HotelParameter cheap = cheapHotel(hm, rangeStartDate, rangeEndDate, true);
-            System.out.println(cheap != null
-                    ? "Cheapest Hotel: " + cheap.hotelName + " rating: " + cheap.rating + " " + cheap.calRate(rangeStartDate, rangeEndDate, true)
-                    : "No Hotels Found...!!!");
-
-            HotelParameter bestRated = bestRatedHotel(hm, rangeStartDate, rangeEndDate, true);
-            System.out.println(bestRated != null
-                    ? "Best Rated Hotel: " + bestRated.hotelName + " rating: " + bestRated.rating + " " + bestRated.calRate(rangeStartDate, rangeEndDate, true)
+            HotelParameter cheapBestRatedHotel = cheapBestRatedHotelForRegularCustomer(hm, rangeStartDate, rangeEndDate);
+            System.out.println(cheapBestRatedHotel != null
+                    ? "Cheapest Best Rated Hotel: " + cheapBestRatedHotel.hotelName + " Rating: " +
+                    cheapBestRatedHotel.rating + " " + cheapBestRatedHotel.calRate(rangeStartDate, rangeEndDate, false)
                     : "No Hotels Found...!!!");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
     }
+
     private static void validateDateRange(Date startDate, Date endDate) {
         if (startDate == null || endDate == null || startDate.after(endDate)) {
             throw new IllegalArgumentException("Invalid date range. Please provide valid start and end dates.");
-        }
-    }
-
-    public static void showHotelByDateRange(HashMap<String, HotelParameter> hm, Date startDate, Date endDate) {
-        for (HotelParameter hotel : hm.values()) {
-            if (isDateRangeOverlap(startDate, endDate, hotel.startDate, hotel.endDate)) {
-                System.out.println("Range: " + startDate + " - " + endDate + " " + hotel.hotelName + " " + hotel.calRate(startDate, endDate, true));
-            }
         }
     }
     public static boolean isDateRangeOverlap(Date targetStartDate, Date targetEndDate, Date startDate, Date endDate) {
         return (targetStartDate.compareTo(endDate) <= 0 && targetEndDate.compareTo(startDate) >= 0);
     }
     public static Date parseDate(String dateString) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", Locale.ENGLISH);
-        try {
-            return sdf.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+        Matcher matcher = DATE_PATTERN.matcher(dateString);
+        if (matcher.matches()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", Locale.ENGLISH);
+            try {
+                return sdf.parse(dateString);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Invalid date format: " + dateString);
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid date format: " + dateString);
         }
     }
     public double calRate(Date startDate, Date endDate, boolean isRewardCustomer) {
@@ -118,9 +131,10 @@ public class HotelParameter {
             currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
         }
         if (isRewardCustomer) {
-            return weekdays * rewardWeekdayRate + weekends * rewardWeekendRate;
+            return (int) (weekdays * rewardWeekdayRate + weekends * rewardWeekendRate);
         } else {
-            return weekdays * weekdayRate + weekends * weekendRate;
+            return (int) (weekdays * weekdayRate + weekends * weekendRate);
         }
     }
+
 }
